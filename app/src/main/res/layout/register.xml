@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?><LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"    android:layout_height="match_parent"
+    tools:context=".SignUp"    android:orientation="vertical"
+    android:weightSum="6"    >
+    <TextView
+        android:id="@+id/tvTitle"        android:layout_width="match_parent"
+        android:layout_height="0dp"        android:layout_weight="1"
+        android:gravity="center"        android:orientation="vertical"
+        android:text="ChessGrade Pawn's path"        android:textColor="#1e94e8"
+        android:textSize="30sp"        />
+    <EditText
+        android:layout_width="match_parent"        android:layout_height="0dp"
+        android:layout_weight="1"        android:id="@+id/email"
+        android:hint="Enter E-mail "        android:inputType="text"
+        android:textColorHint="#1e94e8"        android:autofillHints=""
+        android:textSize="25sp"        android:gravity="center">
+    </EditText>
+    <EditText
+        android:layout_width="match_parent"        android:layout_height="0dp"
+        android:layout_weight="1"        android:id="@+id/username"
+        android:hint="Enter username "        android:inputType="text"
+        android:textColorHint="#1e94e8"        android:autofillHints=""
+        android:textSize="25sp"        android:gravity="center">
+    </EditText>
+    <EditText
+        android:layout_width="match_parent"        android:layout_height="0dp"
+        android:layout_weight="1"        android:id="@+id/password"
+        android:hint="Enter Password"        android:inputType="textPassword"
+        android:textColorHint="#1e94e8"        android:autofillHints=""
+        android:textSize="25sp"        android:gravity="center">
+    </EditText>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Choose your knowledge level"
+        android:textSize="30sp"
+        android:gravity="center"/>
+    <LinearLayout        android:layout_width="match_parent"
+        android:layout_height="0dp"        android:layout_weight="1"
+        android:weightSum="5"        android:orientation="horizontal">
+
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:src="@drawable/black_pawn"
+            android:layout_weight="1"
+            android:scaleX="1"
+            android:id="@+id/pawn"/>
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:src="@drawable/black_knight"
+            android:layout_weight="1"
+            android:id="@+id/knight"/>
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:src="@drawable/black_rook"
+            android:layout_weight="1"
+            android:id="@+id/rook"/>
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:src="@drawable/black_queen"
+            android:layout_weight="1"
+            android:id="@+id/queen"/>
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:src="@drawable/black_king"
+            android:layout_weight="1"
+            android:id="@+id/king"/>
+
+    </LinearLayout>
+
+<androidx.percentlayout.widget.PercentFrameLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_weight="0">
+    <SeekBar
+        app:layout_widthPercent="88%"
+        android:layout_height="wrap_content"
+        android:max="4"
+        android:layout_gravity="center"
+        android:id="@+id/lvl"
+        android:layout_width="wrap_content"/>
+</androidx.percentlayout.widget.PercentFrameLayout>
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="stay signed in"
+        android:id="@+id/checkbox" />
+    <LinearLayout        android:layout_width="match_parent"
+        android:layout_height="0dp"        android:layout_weight="1"
+        android:weightSum="1"        android:orientation="horizontal">
+
+
+        <Button            android:id="@+id/signup"
+            android:layout_width="0dp"            android:layout_height="match_parent"
+            android:layout_weight="1"            android:text="Register"
+            android:textSize="20sp"            android:backgroundTint="#6750A3"
+            android:textColor="#FFFFFF" />
+
+
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Chess3</string>
+    <string name="logOut" />
+    <string name="info" />
+    <string name="menuLogOut">LogOut</string>
+    <string name="menuInfo">Info\n</string>
+</resources>

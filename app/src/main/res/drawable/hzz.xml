@@ -1,0 +1,4 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#000000" /> <!-- Укажите нужный цвет фона -->
+    <!-- Не добавляйте атрибут corner радиус, чтобы углы были острыми -->
+</shape>

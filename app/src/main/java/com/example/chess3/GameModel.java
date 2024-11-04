@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.github.bhlangonijr.chesslib.Board;
+import com.github.bhlangonijr.chesslib.BoardEventType;
 import com.github.bhlangonijr.chesslib.Square;
 import com.github.bhlangonijr.chesslib.move.Move;
 
@@ -97,23 +98,36 @@ public class GameModel extends AppCompatActivity implements View.OnClickListener
         lightChessBoardCell(getSquareRow(square), getSquareCol(square));
     }
 
+    public static String replaceDigitsWithA(String input) {
+        StringBuilder result = new StringBuilder();
+
+        for (char ch : input.toCharArray()) {
+            if (Character.isDigit(ch)) {
+                int count = Character.getNumericValue(ch);
+                result.append("a".repeat(count)); // Добавляем 'a' count раз
+            } else {
+                result.append(ch); // Оставляем буквы как есть
+            }
+        }
+
+        return result.toString();
+    }
+
+
     private void drawBoard(String fen){
         fen = fen.substring(0, fen.indexOf(' '));
+        fen = replaceDigitsWithA(fen);
         String[] fenn = fen.split("/");
         String[][] fennn = new String[8][8];
+
+
+
+
+
+
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                if(isNumeric(fenn[i].substring(j, j+1))){
-
-                    for (int k = 0; k < Integer.parseInt(fenn[i]); k++) {
-                        fennn[i][j] = "a";
-                        j++;
-                    }
-                }
-                else {
-                    fennn[i][j] = fenn[i].substring(j, j+1);
-                }
-
+                fennn[i][j] = fenn[i].substring(j, j+1);
             }
         }
         for (int i = 0; i < 8; i++) {
@@ -128,10 +142,7 @@ public class GameModel extends AppCompatActivity implements View.OnClickListener
     }
 
     private List<Square> getPossibleMoves(Board board, Square square){
-        // Получаем все возможные ходы на доске
         List<Move> legalMoves = board.legalMoves();
-
-        // Фильтруем ходы по клетке fromSquare
         List<Square> movesFromSquare = new ArrayList<>();
         for (Move move : legalMoves) {
             if (move.getFrom().equals(square)) {
@@ -141,8 +152,14 @@ public class GameModel extends AppCompatActivity implements View.OnClickListener
         return  movesFromSquare;
 
     }
+
+
     Board boards = new Board();
     private ChessBoardAdapter adapter;
+    Square squre_from;
+
+
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -152,29 +169,45 @@ public class GameModel extends AppCompatActivity implements View.OnClickListener
         boardGV = findViewById(R.id.chessBoardGridView);
         adapter = new ChessBoardAdapter(this);
         boardGV.setAdapter(adapter);
+
+
+
         boardGV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                int row = adapter.getItemRow(i);
+                int col = adapter.getItemCol(i);
+                Square squareTo = parseRowCol(row, col);
+                adapter.clearBoard();
                 try {
-                    adapter.clearBoard();
-                    int row = adapter.getItemRow(i);
-                    int col = adapter.getItemCol(i);
-                    lightPossibleMovesFromSquare(boards, parseRowCol(row, col));
-                    Log.d("Artemp", " "+getSquareRow(Square.A8));
-                    Log.d("Artemp", " "+getSquareCol(Square.A8));
-                } catch (Exception e) {
+                    if(getPossibleMoves(boards, squre_from).contains(squareTo)){
+                        Move newMove = new Move(squre_from, squareTo);
+                        boards.doMove(newMove);
+                        drawBoard(boards.getFen());
+                    }
+                    else{
+                        lightPossibleMovesFromSquare(boards, squareTo);
+                        squre_from = squareTo;
+                    }
+                }
+                catch (Exception e){
                     Log.e("Artemp", e.toString());
-                    // Дополнительная обработка, если необходимо
                 }
 
             }
         });
 
         String fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq e3 0 1";
-        drawBoard(fen);
+
 
         boards.loadFromFen(fen);
-
+        drawBoard(boards.getFen());
+        try {
+            String[] fenn = fen.split("/");
+        }
+        catch (Exception e){
+            Log.e("Artemp", e.toString());
+        }
 
 
     }

@@ -1,5 +1,7 @@
 package com.example.chess3;
 
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.DeadObjectException;
 import android.util.Log;
@@ -9,6 +11,7 @@ import android.widget.GridView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.github.bhlangonijr.chesslib.Board;
@@ -170,7 +173,23 @@ public class GameModel extends AppCompatActivity implements View.OnClickListener
         adapter = new ChessBoardAdapter(this);
         boardGV.setAdapter(adapter);
 
-
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Победа!");
+        builder.setMessage("Вы проиграли.");
+        builder.setPositiveButton("ОК", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Intent intent=new Intent(GameModel.this, GameModel.class);
+                startActivity(intent);
+            }
+        });
+        builder.setNegativeButton("Нет уж", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss(); // Закрываем диалог
+            }
+        });
+        AlertDialog dialog = builder.create();
 
         boardGV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -179,19 +198,19 @@ public class GameModel extends AppCompatActivity implements View.OnClickListener
                 int col = adapter.getItemCol(i);
                 Square squareTo = parseRowCol(row, col);
                 adapter.clearBoard();
-                try {
-                    if(getPossibleMoves(boards, squre_from).contains(squareTo)){
+                if(!boards.isMated()) {
+
+                    if (getPossibleMoves(boards, squre_from).contains(squareTo)) {
                         Move newMove = new Move(squre_from, squareTo);
                         boards.doMove(newMove);
                         drawBoard(boards.getFen());
-                    }
-                    else{
+                    } else {
                         lightPossibleMovesFromSquare(boards, squareTo);
                         squre_from = squareTo;
                     }
                 }
-                catch (Exception e){
-                    Log.e("Artemp", e.toString());
+                else{
+                    dialog.show();
                 }
 
             }

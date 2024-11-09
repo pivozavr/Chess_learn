@@ -36,7 +36,7 @@ public class HostJoin extends AppCompatActivity {
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     DatabaseReference myRef = database.getReference();
 
-    String id="";
+
     String alb = "abcdefghijklmnopqrstvuwxyz";
     char[] lets = alb.toCharArray();
 
@@ -51,7 +51,7 @@ public class HostJoin extends AppCompatActivity {
         join.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent=new Intent(HostJoin.this, Chat.class);
+                Intent intent=new Intent(HostJoin.this, GameModel.class);
                 intent.putExtra("host_id", hostId.getText().toString());
                 startActivity(intent);
             }
@@ -59,6 +59,7 @@ public class HostJoin extends AppCompatActivity {
         host.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                String id="";
                 Random rnd = new Random();
                 for(int i=0; i<4; i++) {
                     char let = lets[rnd.nextInt(lets.length)];
@@ -72,9 +73,8 @@ public class HostJoin extends AppCompatActivity {
                     }
 
                 }
-                Log.d("ART", id);
                 Toast.makeText(HostJoin.this, id, Toast.LENGTH_LONG).show();
-                myRef.child(id).child("lastMessage").setValue("");
+                myRef.child("Lobbies").child(id).child("lastMove").setValue("");
                 Intent intent=new Intent(HostJoin.this, GameModel.class);
                 intent.putExtra("host_id", id);
                 startActivity(intent);

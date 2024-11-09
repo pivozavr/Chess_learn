@@ -70,7 +70,8 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener {
         if (email != "" && password != ""){
             intent=new Intent(SignUp.this, HostJoin.class);
             startActivity(intent);
-        }}
+        }
+        }
 
         myRef.addValueEventListener(new ValueEventListener() {
             @Override

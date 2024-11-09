@@ -8,19 +8,31 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.github.bhlangonijr.chesslib.Board;
 import com.github.bhlangonijr.chesslib.BoardEventType;
+import com.github.bhlangonijr.chesslib.Piece;
 import com.github.bhlangonijr.chesslib.Square;
 import com.github.bhlangonijr.chesslib.move.Move;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 
@@ -48,14 +60,7 @@ public class GameModel extends AppCompatActivity implements View.OnClickListener
 
     }
 
-    public static boolean isNumeric(String str) {
-        try {
-            Integer.parseInt(str);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
+
 
     private void updateChessBoardCell(int row, int col, int drawableResId) {
         if (adapter != null) {
@@ -137,8 +142,6 @@ public class GameModel extends AppCompatActivity implements View.OnClickListener
             for (int j = 0; j < 8; j++) {
                 int resId = map.get(fennn[i][j]);
                 updateChessBoardCell(i,j,resId);
-
-
             }
         }
 
@@ -156,11 +159,70 @@ public class GameModel extends AppCompatActivity implements View.OnClickListener
 
     }
 
+    private Square getPromotionRequiredSuare(Board board){
+        String fen = board.getFen();
+        fen = replaceDigitsWithA(fen);
+        fen = fen.substring(0, fen.indexOf(' '));
+        String black = fen.split("/")[0];
+        String white = fen.split("/")[7];
+        Square res = null;
+
+        if(black.contains("P")) {
+            res = parseRowCol(0, black.indexOf("P"));
+        }
+
+        if(white.contains("p")) {
+            res = parseRowCol(7, white.indexOf("p"));
+        }
+        return res;
+    }
+    private boolean isPromotionRequired(Board board){
+        String fen = board.getFen();
+        fen = replaceDigitsWithA(fen);
+        fen = fen.substring(0, fen.indexOf(' '));
+        String black = fen.split("/")[0];
+        String white = fen.split("/")[7];
+        boolean res = false;
+
+        if(black.contains("P"))
+            res = true;
+
+        if(white.contains("p"))
+            res = true;
+
+        return res;
+    }
+
+    private void promotePawn(Board board, String piece){
+        try{
+            HashMap<String, Piece> map = new HashMap<>();
+            map.put("KnightBLACK", Piece.BLACK_KNIGHT);
+            map.put("KnightWHITE", Piece.WHITE_KNIGHT);
+            map.put("BishopBLACK", Piece.BLACK_BISHOP);
+            map.put("BishopWHITE", Piece.WHITE_BISHOP);
+            map.put("RookBLACK", Piece.BLACK_ROOK);
+            map.put("RookWHITE", Piece.WHITE_ROOK);
+            map.put("QueenBLACK", Piece.BLACK_QUEEN);
+            map.put("QueenWHITE", Piece.WHITE_QUEEN);
+
+            Square square = getPromotionRequiredSuare(board);
+
+
+            board.setPiece(map.get(piece+board.getSideToMove().flip()), square);
+        }
+        catch (Exception e){
+            Log.e("Artemp", piece+board.getSideToMove().flip());
+        }
+    }
+
 
     Board boards = new Board();
     private ChessBoardAdapter adapter;
     Square squre_from;
-
+    TextView movesHistory;
+    FirebaseDatabase database = FirebaseDatabase.getInstance();
+    DatabaseReference myRef = database.getReference();
+    ArrayList<String> moves= new ArrayList<String>();
 
 
     @Override
@@ -168,27 +230,59 @@ public class GameModel extends AppCompatActivity implements View.OnClickListener
         super.onCreate(savedInstanceState);
         setContentView(R.layout.game);
         initHashMap();
+        movesHistory = findViewById(R.id.moves_history);
+
+        Intent intent = getIntent();
+        String host_id=intent.getStringExtra("host_id");
+
+        myRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String move = dataSnapshot.child("Lobbies").child(host_id).child("lastMove").getValue(String.class);
+                try {
+                    boards.doMove(move);
+                    moves.add(String.valueOf(move));
+                    String s = "";
+                    for (int j = 0; j < moves.size(); j++) {
+                        if(j%2==0) {
+                            s += "\n";
+                            s+=j/2+1;
+                            s+=". ";
+                        }
+                        s+=moves.get(j);
+                        s+=" ";
+
+                    }
+                    movesHistory.setText(s);
+                }
+                catch (Exception e){}
+
+                drawBoard(boards.getFen());
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.w("ART", "Failed to read value.", error.toException());
+            }
+        });
 
         boardGV = findViewById(R.id.chessBoardGridView);
         adapter = new ChessBoardAdapter(this);
         boardGV.setAdapter(adapter);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Победа!");
-        builder.setMessage("Вы проиграли.");
-        builder.setPositiveButton("ОК", new DialogInterface.OnClickListener() {
+        builder.setTitle("Choose promotion figure");
+        final String[] charSequence = new String[] {"Knight","Bishop","Rook","Queen"};
+
+        builder.setSingleChoiceItems(charSequence, -1, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Intent intent=new Intent(GameModel.this, GameModel.class);
-                startActivity(intent);
+                promotePawn(boards,  charSequence[which]);
+                drawBoard(boards.getFen());
+                dialog.dismiss();
             }
         });
-        builder.setNegativeButton("Нет уж", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss(); // Закрываем диалог
-            }
-        });
+
+
         AlertDialog dialog = builder.create();
 
         boardGV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -198,20 +292,46 @@ public class GameModel extends AppCompatActivity implements View.OnClickListener
                 int col = adapter.getItemCol(i);
                 Square squareTo = parseRowCol(row, col);
                 adapter.clearBoard();
+
                 if(!boards.isMated()) {
 
                     if (getPossibleMoves(boards, squre_from).contains(squareTo)) {
                         Move newMove = new Move(squre_from, squareTo);
                         boards.doMove(newMove);
-                        drawBoard(boards.getFen());
+                        moves.add(String.valueOf(newMove));
+                        myRef.child("Lobbies").child(host_id).child("lastMove").setValue(String.valueOf(newMove));
                     } else {
                         lightPossibleMovesFromSquare(boards, squareTo);
                         squre_from = squareTo;
                     }
                 }
                 else{
+
+                }
+                if(isPromotionRequired(boards)) {
                     dialog.show();
                 }
+                drawBoard(boards.getFen());
+
+                try{
+                    String s = "";
+                    for (int j = 0; j < moves.size(); j++) {
+                        if(j%2==0) {
+                            s += "\n";
+                            s+=j/2+1;
+                            s+=". ";
+                        }
+                        s+=moves.get(j);
+                        s+=" ";
+
+                    }
+                    movesHistory.setText(s);
+                }
+                catch (Exception e){
+                    Log.e("Artemp", String.valueOf(e));
+                }
+
+
 
             }
         });
@@ -221,12 +341,6 @@ public class GameModel extends AppCompatActivity implements View.OnClickListener
 
         boards.loadFromFen(fen);
         drawBoard(boards.getFen());
-        try {
-            String[] fenn = fen.split("/");
-        }
-        catch (Exception e){
-            Log.e("Artemp", e.toString());
-        }
 
 
     }

@@ -22,7 +22,6 @@ import java.util.Random;
 
 public class HostJoinActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
-    SharedPreferences spref;
     Button join;
     Button host;
     EditText hostId;
@@ -41,7 +40,7 @@ public class HostJoinActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.host_join);
+        setContentView(R.layout.host_join_layout);
 
         initSharedPreferencesHelper();
 

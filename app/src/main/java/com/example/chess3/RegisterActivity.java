@@ -1,8 +1,6 @@
 package com.example.chess3;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -56,15 +54,17 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     DatabaseReference myRef = database.getReference();
 
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.register);
+        setContentView(R.layout.register_layout);
         initFireBase();
         initSharedPreferencesHelper();
         initViews();
         initAnimations();
     }
+
 
     private void initSharedPreferencesHelper() {
         sprefHelper = new SharedPreferencesHelper(this);
@@ -107,9 +107,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     public void onClick(View view) {
         if (view == signup) {
             signUp(email.getText().toString(), password.getText().toString());
-            Intent intent = new Intent(RegisterActivity.this, SignUpActivity.class);
-            startActivity(intent);
-            finish();
+            signup.setClickable(false);
         }
 
     }
@@ -120,37 +118,31 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         myRef.child("users").child(firebaseUser.getUid()).setValue(user);
     }
 
-
     private void signUp(String email, String password) {
-        mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            Log.d("Art", "createUserWithEmail:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            Toast.makeText(RegisterActivity.this, "Authentication succeed.",
-                                    Toast.LENGTH_SHORT).show();
-                            writeNewUser(email, password, username.getText().toString(), seekBar.getProgress());
-                            if (checkBox.isChecked()) {
-                                sprefHelper.putData("email", email);
-                                sprefHelper.putData("password", password);
+        mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if (task.isSuccessful()) {
+                    // Sign in success, update UI with the signed-in user's information
+                    Toast.makeText(RegisterActivity.this, "Accout created.", Toast.LENGTH_SHORT).show();
+                    writeNewUser(email, password, username.getText().toString(), seekBar.getProgress());
+                    if (checkBox.isChecked()) {
+                        sprefHelper.putData("out", "true");
+                        sprefHelper.putData("email", email);
+                        sprefHelper.putData("password", password);
+                        Log.d("AQrt", sprefHelper.getData("email"));
 
-                            } else {
-                                sprefHelper.putData("email", "");
-                                sprefHelper.putData("password", "");
-                            }
-
-                        } else {
-                            // If sign in fails, display a message to the user.
-                            Log.w("Art", "createUserWithEmail:failure", task.getException());
-                            Toast.makeText(RegisterActivity.this, "Authentication failed.",
-                                    Toast.LENGTH_SHORT).show();
-
-                        }
                     }
-                });
+                    Intent intent = new Intent(RegisterActivity.this, SignUpActivity.class);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Toast.makeText(RegisterActivity.this, "Acoount creation failed.",
+                            Toast.LENGTH_SHORT).show();
+
+                }
+            }
+        });
     }
 
     @Override

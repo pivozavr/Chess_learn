@@ -3,13 +3,11 @@ package com.example.chess3;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.DeadObjectException;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,11 +15,9 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.github.bhlangonijr.chesslib.Board;
-import com.github.bhlangonijr.chesslib.BoardEventType;
 import com.github.bhlangonijr.chesslib.Piece;
 import com.github.bhlangonijr.chesslib.Square;
 import com.github.bhlangonijr.chesslib.move.Move;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -29,14 +25,11 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 
-public class GameModel extends AppCompatActivity implements View.OnClickListener {
+public class GameModel extends AppCompatActivity{
     GridView boardGV;
 
     private final HashMap<String, Integer> map = new HashMap<>();
@@ -223,7 +216,7 @@ public class GameModel extends AppCompatActivity implements View.OnClickListener
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.game);
+        setContentView(R.layout.game_layout);
 
 
         HashMap<String, Piece> promotionPieces = new HashMap<>();
@@ -354,16 +347,6 @@ public class GameModel extends AppCompatActivity implements View.OnClickListener
 
     }
 
-
-    @Override
-    public void onClick(View view) {
-        Log.e("ART", view.toString());
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-
-            }
-        }
-    }
 }
 
 

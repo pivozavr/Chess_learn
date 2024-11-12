@@ -1,62 +1,91 @@
-<?xml version="1.0" encoding="utf-8"?><LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"    android:layout_height="match_parent"
-    tools:context=".SignUp"    android:orientation="vertical"
-    android:weightSum="6"    >
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:weightSum="6"
+    tools:context=".SignUpActivity">
+
     <TextView
-        android:id="@+id/tvTitle"        android:layout_width="match_parent"
-        android:layout_height="0dp"        android:layout_weight="1"
-        android:gravity="center"        android:orientation="vertical"
-        android:text="ChessGrade Pawn's path"        android:textColor="#1e94e8"
-        android:textSize="30sp"        />
+        android:id="@+id/tvTitle"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:text="ChessGrade Pawn's path"
+        android:textColor="#1e94e8"
+        android:textSize="30sp" />
 
     <EditText
-        android:layout_width="match_parent"        android:layout_height="0dp"
-        android:layout_weight="1.45"        android:id="@+id/email"
-        android:hint="Enter your E-mail"        android:inputType="text"
-        android:textColorHint="#1e94e8"        android:autofillHints=""
-        android:textSize="25sp"        android:gravity="center">
-    </EditText>
+        android:id="@+id/email"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1.45"
+        android:autofillHints=""
+        android:gravity="center"
+        android:hint="Enter your E-mail"
+        android:inputType="text"
+        android:textColorHint="#1e94e8"
+        android:textSize="25sp"></EditText>
+
     <EditText
-        android:layout_width="match_parent"        android:layout_height="0dp"
-        android:layout_weight="1.45"        android:id="@+id/password"
-        android:hint="Enter your Password"        android:inputType="textPassword"
-        android:textColorHint="#1e94e8"        android:autofillHints=""
-        android:textSize="25sp"        android:gravity="center">
+        android:id="@+id/password"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1.45"
+        android:autofillHints=""
+        android:gravity="center"
+        android:hint="Enter your Password"
+        android:inputType="textPassword"
+        android:textColorHint="#1e94e8"
+        android:textSize="25sp">
 
     </EditText>
 
 
-        <CheckBox
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="stay signed in"
-            android:id="@+id/checkbox"
-            android:layout_weight="0.1"
-            />
+    <CheckBox
+        android:id="@+id/checkbox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.1"
+        android:text="stay signed in" />
 
-    <LinearLayout        android:layout_width="match_parent"
-        android:layout_height="0dp"        android:layout_weight="1"
-        android:weightSum="1"        android:orientation="horizontal">
-
-
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:weightSum="1">
 
 
         <Button
-            android:id="@+id/login"            android:layout_width="0dp"
-            android:layout_height="match_parent"            android:layout_weight="1"
-            android:text="Log in"            android:textSize="20sp"
-            android:backgroundTint="#6750A3"            android:textColor="#FFFFFF" />
+            android:id="@+id/login"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:backgroundTint="#6750A3"
+            android:text="Log in"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp" />
+
         <Space
-            android:layout_width="0dp"            android:layout_height="match_parent"
-            android:layout_weight="1">
-        </Space>
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"></Space>
     </LinearLayout>
+
     <Button
-        android:id="@+id/signup"        android:layout_width="match_parent"
-        android:layout_height="0dp"        android:layout_weight="1"
-        android:gravity="center"        android:orientation="vertical"
-        android:text="If you have no account, register"        android:textColor="#1e94e8"
-        android:textSize="30sp"        />
+        android:id="@+id/signup"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:text="If you have no account, register"
+        android:textColor="#1e94e8"
+        android:textSize="30sp" />
 
 </LinearLayout>

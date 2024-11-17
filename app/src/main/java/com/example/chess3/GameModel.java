@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.github.bhlangonijr.chesslib.Board;
 import com.github.bhlangonijr.chesslib.Piece;
+import com.github.bhlangonijr.chesslib.Side;
 import com.github.bhlangonijr.chesslib.Square;
 import com.github.bhlangonijr.chesslib.move.Move;
 import com.google.firebase.database.DataSnapshot;
@@ -212,6 +213,7 @@ public class GameModel extends AppCompatActivity{
     DatabaseReference myRef = database.getReference();
     ArrayList<String> moves = new ArrayList<String>();
     String s = "";
+    Side side;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -235,6 +237,7 @@ public class GameModel extends AppCompatActivity{
 
         Intent intent = getIntent();
         String host_id = intent.getStringExtra("host_id");
+        side = Side.valueOf(intent.getStringExtra("side"));
 
         myRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -274,7 +277,7 @@ public class GameModel extends AppCompatActivity{
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Choose promotion figure");
         final String[] charSequence = new String[]{"Knight", "Bishop", "Rook", "Queen"};
-
+        builder.setCancelable(false);
         builder.setSingleChoiceItems(charSequence, -1, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -297,7 +300,7 @@ public class GameModel extends AppCompatActivity{
                 squareTo = parseRowCol(row, col);
                 adapter.clearBoard();
 
-                if (!boards.isMated()) {
+                if (!boards.isMated() && boards.getSideToMove().equals(side)) {
 
                     if (getPossibleMoves(boards, squre_from).contains(squareTo)) {
                         Move newMove = new Move(squre_from, squareTo);

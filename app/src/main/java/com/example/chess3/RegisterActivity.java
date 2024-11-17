@@ -3,6 +3,7 @@ package com.example.chess3;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
@@ -106,10 +107,24 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     @Override
     public void onClick(View view) {
         if (view == signup) {
-            signUp(email.getText().toString(), password.getText().toString());
-            signup.setClickable(false);
+            if(checkData()){
+                signUp(email.getText().toString(), password.getText().toString());
+            }
         }
 
+    }
+
+    private boolean checkData(){
+        boolean result = true;
+        if(!Patterns.EMAIL_ADDRESS.matcher(email.getText().toString()).matches()){
+            result = false;
+            Toast.makeText(this, "Use valid E-mail", Toast.LENGTH_SHORT).show();
+        }
+        else if(password.getText().toString().length()<6){
+            result = false;
+            Toast.makeText(this, "Password must be minimum 6 symbols", Toast.LENGTH_SHORT).show();
+        }
+        return result;
     }
 
     public void writeNewUser(String email, String password, String username, int lvl) {
@@ -130,7 +145,6 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                         sprefHelper.putData("out", "true");
                         sprefHelper.putData("email", email);
                         sprefHelper.putData("password", password);
-                        Log.d("AQrt", sprefHelper.getData("email"));
 
                     }
                     Intent intent = new Intent(RegisterActivity.this, SignUpActivity.class);

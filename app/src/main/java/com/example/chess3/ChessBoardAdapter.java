@@ -50,7 +50,9 @@ public class ChessBoardAdapter extends BaseAdapter {
     }
 
     public void lightUpCell(int row, int col){
-        if(boardBackgrounds[row][col] == R.color.whiter)
+        if(boardImages[row][col]!=0)
+            boardBackgrounds[row][col] = R.drawable.red;
+        else if(boardBackgrounds[row][col] == R.color.whiter)
             boardBackgrounds[row][col] = R.drawable.white_selected;
         else if(boardBackgrounds[row][col] == R.color.green)
             boardBackgrounds[row][col] = R.drawable.green_selected;

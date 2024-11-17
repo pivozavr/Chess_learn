@@ -20,7 +20,7 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.Random;
 
-public class HostJoinActivity extends AppCompatActivity {
+public class HostJoinActivity extends AppCompatActivity implements View.OnClickListener {
     private FirebaseAuth mAuth;
     Button join;
     Button host;
@@ -34,8 +34,7 @@ public class HostJoinActivity extends AppCompatActivity {
     DatabaseReference myRef = database.getReference();
 
 
-    String alb = "abcdefghijklmnopqrstvuwxyz";
-    char[] lets = alb.toCharArray();
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -43,44 +42,21 @@ public class HostJoinActivity extends AppCompatActivity {
         setContentView(R.layout.host_join_layout);
 
         initSharedPreferencesHelper();
+        initViews();
+        initFireBase();
 
+    }
+
+    private void initFireBase() {
         mAuth = FirebaseAuth.getInstance();
+    }
+
+    private void initViews(){
         hostId = findViewById(R.id.host_id);
         join = findViewById(R.id.join);
         host = findViewById(R.id.host);
-        join.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(HostJoinActivity.this, GameModel.class);
-                intent.putExtra("host_id", hostId.getText().toString());
-                startActivity(intent);
-                finish();
-            }
-        });
-        host.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String id = "";
-                Random rnd = new Random();
-                for (int i = 0; i < 4; i++) {
-                    char let = lets[rnd.nextInt(lets.length)];
-                    int num = rnd.nextInt(10);
-                    boolean iff = rnd.nextBoolean();
-                    if (iff) {
-                        id += String.valueOf(num);
-                    } else {
-                        id += String.valueOf(let).toUpperCase();
-                    }
-
-                }
-                Toast.makeText(HostJoinActivity.this, id, Toast.LENGTH_LONG).show();
-                myRef.child("Lobbies").child(id).child("lastMove").setValue("");
-                Intent intent = new Intent(HostJoinActivity.this, GameModel.class);
-                intent.putExtra("host_id", id);
-                startActivity(intent);
-                finish();
-            }
-        });
+        join.setOnClickListener(this);
+        host.setOnClickListener(this);
     }
 
     private void initSharedPreferencesHelper() {
@@ -110,5 +86,45 @@ public class HostJoinActivity extends AppCompatActivity {
         }
         //headerView.setText(item.getTitle());
         return super.onOptionsItemSelected(item);
+    }
+
+    private String generateId(){
+        String alb = "abcdefghijklmnopqrstvuwxyz";
+        char[] lets = alb.toCharArray();
+        String id = "";
+        Random rnd = new Random();
+        for (int i = 0; i < 4; i++) {
+            char let = lets[rnd.nextInt(lets.length)];
+            int num = rnd.nextInt(10);
+            boolean iff = rnd.nextBoolean();
+            if (iff) {
+                id += String.valueOf(num);
+            } else {
+                id += String.valueOf(let).toUpperCase();
+            }
+
+        }
+        return id;
+    }
+
+    @Override
+    public void onClick(View view) {
+        if (view == host){
+            String id = generateId();
+            Toast.makeText(HostJoinActivity.this, id, Toast.LENGTH_LONG).show();
+            myRef.child("Lobbies").child(id).child("lastMove").setValue("");
+            Intent intent = new Intent(HostJoinActivity.this, GameModel.class);
+            intent.putExtra("host_id", id);
+            intent.putExtra("side", "WHITE");
+            startActivity(intent);
+            finish();
+        }
+        else if(view == join){
+            Intent intent = new Intent(HostJoinActivity.this, GameModel.class);
+            intent.putExtra("host_id", hostId.getText().toString());
+            intent.putExtra("side", "BLACK");
+            startActivity(intent);
+            finish();
+        }
     }
 }

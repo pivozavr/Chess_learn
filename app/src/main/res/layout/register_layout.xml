@@ -27,7 +27,7 @@
         android:autofillHints=""
         android:gravity="center"
         android:hint="Enter E-mail "
-        android:inputType="text"
+        android:inputType="textEmailAddress"
         android:textColorHint="#1e94e8"
         android:textSize="25sp"></EditText>
 

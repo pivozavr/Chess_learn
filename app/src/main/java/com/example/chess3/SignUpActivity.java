@@ -11,6 +11,8 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+
+import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -85,13 +87,26 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
             Intent intent = new Intent(SignUpActivity.this, RegisterActivity.class);
             startActivity(intent);
             finish();
-        }
+            }
+
         if (view== login){
-            signIn(email.getText().toString(), password.getText().toString());
-            Intent intent=new Intent(SignUpActivity.this, HostJoinActivity.class);
-            startActivity(intent);
-            finish();
+            if(checkData()) {
+                signIn(email.getText().toString(), password.getText().toString());
+            }
         }
+    }
+
+    private boolean checkData(){
+        boolean result = true;
+        if(!Patterns.EMAIL_ADDRESS.matcher(email.getText().toString()).matches()){
+            result = false;
+            Toast.makeText(this, "Use valid E-mail", Toast.LENGTH_SHORT).show();
+        }
+        else if(password.getText().toString().length()<6){
+            result = false;
+            Toast.makeText(this, "Password must be minimum 6 symbols", Toast.LENGTH_SHORT).show();
+        }
+        return result;
     }
 
 
@@ -109,10 +124,13 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                         sprefHelper.putData("email", email);
                         sprefHelper.putData("password", password);
                     }
+                    Intent intent = new Intent(SignUpActivity.this, HostJoinActivity.class);
+                    startActivity(intent);
+                    finish();
 
                 }
                 else {
-                    Toast.makeText(SignUpActivity.this, "Authentication failed.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SignUpActivity.this, "Wrong password or E-mail", Toast.LENGTH_SHORT).show();
                 }
             }
         });

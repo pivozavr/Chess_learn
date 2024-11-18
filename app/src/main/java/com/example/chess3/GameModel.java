@@ -145,25 +145,6 @@ public class GameModel extends AppCompatActivity{
             }
         }
         return movesFromSquare;
-
-    }
-
-    private Square getPromotionRequiredSuare(Board board) {
-        String fen = board.getFen();
-        fen = replaceDigitsWithA(fen);
-        fen = fen.substring(0, fen.indexOf(' '));
-        String black = fen.split("/")[0];
-        String white = fen.split("/")[7];
-        Square res = null;
-
-        if (black.contains("P")) {
-            res = parseRowCol(0, black.indexOf("P"));
-        }
-
-        if (white.contains("p")) {
-            res = parseRowCol(7, white.indexOf("p"));
-        }
-        return res;
     }
 
     private boolean isPromotionRequired(Board board) {
@@ -179,29 +160,6 @@ public class GameModel extends AppCompatActivity{
 
         return res;
     }
-
-
-    private void promotePawn(Board board, String piece) {
-        try {
-            HashMap<String, Piece> map = new HashMap<>();
-            map.put("KnightBLACK", Piece.BLACK_KNIGHT);
-            map.put("KnightWHITE", Piece.WHITE_KNIGHT);
-            map.put("BishopBLACK", Piece.BLACK_BISHOP);
-            map.put("BishopWHITE", Piece.WHITE_BISHOP);
-            map.put("RookBLACK", Piece.BLACK_ROOK);
-            map.put("RookWHITE", Piece.WHITE_ROOK);
-            map.put("QueenBLACK", Piece.BLACK_QUEEN);
-            map.put("QueenWHITE", Piece.WHITE_QUEEN);
-
-            Square square = getPromotionRequiredSuare(board);
-
-
-            board.setPiece(map.get(piece + board.getSideToMove().flip()), square);
-        } catch (Exception e) {
-            Log.e("Artemp", piece + board.getSideToMove().flip());
-        }
-    }
-
 
     Board boards = new Board();
     private ChessBoardAdapter adapter;

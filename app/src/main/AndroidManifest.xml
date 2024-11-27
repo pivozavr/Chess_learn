@@ -20,7 +20,7 @@
             android:name=".RegisterActivity"
             android:exported="false" />
         <activity
-            android:name=".GameModel"
+            android:name=".ChessGameActivity"
             android:exported="false" />
         <activity
             android:name=".SignUpActivity"

@@ -1,7 +1,6 @@
 package com.example.chess3;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -113,14 +112,14 @@ public class HostJoinActivity extends AppCompatActivity implements View.OnClickL
             String id = generateId();
             Toast.makeText(HostJoinActivity.this, id, Toast.LENGTH_LONG).show();
             myRef.child("Lobbies").child(id).child("lastMove").setValue("");
-            Intent intent = new Intent(HostJoinActivity.this, GameModel.class);
+            Intent intent = new Intent(HostJoinActivity.this, ChessGameActivity.class);
             intent.putExtra("host_id", id);
             intent.putExtra("side", "WHITE");
             startActivity(intent);
             finish();
         }
         else if(view == join){
-            Intent intent = new Intent(HostJoinActivity.this, GameModel.class);
+            Intent intent = new Intent(HostJoinActivity.this, ChessGameActivity.class);
             intent.putExtra("host_id", hostId.getText().toString());
             intent.putExtra("side", "BLACK");
             startActivity(intent);

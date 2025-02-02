@@ -57,7 +57,7 @@ public class GameModel {
         return result.toString();
     }
 
-    public void loadFromMovesList(MoveList moves){
+    public void loadFromMovesList(List<Move> moves){
         board.loadFromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq e3 0 1");
         for (Move move:
              moves) {

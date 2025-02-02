@@ -6,6 +6,9 @@
     />
     <item
         android:id="@+id/host_men"
-        android:title="Host/Join"/>
+        android:title="Play Online"/>
+    <item
+        android:id="@+id/level_men"
+        android:title="Levels Mode"/>
 
 </menu>

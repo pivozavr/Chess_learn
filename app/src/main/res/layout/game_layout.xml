@@ -13,17 +13,11 @@
         android:stretchMode="columnWidth"
         android:gravity="center_vertical"
         />
-    <ScrollView
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_weight="1"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1">
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="30dp"
-            android:id="@+id/moves_history"
-            />
-    </ScrollView>
+        android:id="@+id/movesRecycler"/>
 
 
 </LinearLayout>

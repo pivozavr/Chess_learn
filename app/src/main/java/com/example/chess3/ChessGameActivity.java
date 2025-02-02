@@ -3,16 +3,17 @@ package com.example.chess3;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.telephony.SmsManager;
 import android.util.Log;
-import android.view.View;
-import android.widget.AdapterView;
 import android.widget.GridView;
-import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.github.bhlangonijr.chesslib.Piece;
 import com.github.bhlangonijr.chesslib.Side;
@@ -27,13 +28,54 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
+public class ChessGameActivity extends AppCompatActivity {
 
-public class ChessGameActivity extends AppCompatActivity{
-    GridView boardGV;
-
-
+    private GridView boardGV;
     private final HashMap<String, Integer> map = new HashMap<>();
+    private final HashMap<String, Piece> promotionPieces = new HashMap<>();
+    private GameModel coolerBoard;
+    private ChessBoardAdapter adapter;
+    private Square squareFrom;
+    private CoolerSquare coolerSquareTo;
+    private RecyclerView movesRecycler;
+    private FirebaseDatabase database = FirebaseDatabase.getInstance();
+    private DatabaseReference myRef = database.getReference();
+    private List<Move> moves = new MoveList();
+    private ArrayList<MoveItem> movesList;
+    private GameModel newGameModel;
+    private AlertDialog promotionDialog;
+    private AlertDialog mateDialog;
+    private String hostId;
+    private Side side;
+    private MovesAdapter movesAdapter;
+    private int row;
+    private int col;
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.game_layout);
+
+        initHashMap();
+        setupBoardGridView();
+        initFields();
+        initPickPromotionPieceDialogue();
+        initMateDialog();
+        setupFirebaseListener();
+    }
+
+    private void initFields() {
+        Intent intent = getIntent();
+        hostId = intent.getStringExtra("host_id");
+        side = Side.valueOf(intent.getStringExtra("side"));
+
+
+        coolerBoard = new GameModel();
+        newGameModel = new GameModel();
+        drawBoard(coolerBoard.getBoardArray());
+    }
 
     private void initHashMap() {
         map.put("r", R.drawable.black_rook);
@@ -52,69 +94,6 @@ public class ChessGameActivity extends AppCompatActivity{
 
         map.put("a", 0);
 
-    }
-
-
-    private void updateChessBoardCell(int row, int col, int drawableResId) {
-        if (adapter != null) {
-            adapter.updateCellImage(row, col, drawableResId);
-        }
-    }
-
-    private void lightUpChessBoardCell(int row, int col) {
-        if (adapter != null) {
-            adapter.lightUpCell(row, col);
-        }
-    }
-
-    private void lightChessBoardCell(int row, int col) {
-        if (adapter != null) {
-            adapter.lightCell(row, col);
-        }
-    }
-
-
-    public void lightPossibleMovesFromSquare(CoolerSquare square) {
-        for (Square squaree : coolerBoard.getPossibleMoves(square.getSquare())) {
-            CoolerSquare coolerSquare = new CoolerSquare(squaree);
-            lightUpChessBoardCell(coolerSquare.getSquareRow(), coolerSquare.getSquareCol());
-        }
-        lightChessBoardCell(square.getSquareRow(), square.getSquareCol());
-    }
-
-
-
-
-    private void drawBoard(String[][] fen) {
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                int resId = map.get(fen[i][j]);
-                updateChessBoardCell(i, j, resId);
-            }
-        }
-
-    }
-
-
-    GameModel coolerBoard;
-    private ChessBoardAdapter adapter;
-    Square squre_from;
-    Square squareTo;
-    CoolerSquare coolerSquareTo = new CoolerSquare(squareTo);
-    TextView movesHistory;
-    FirebaseDatabase database = FirebaseDatabase.getInstance();
-    DatabaseReference myRef = database.getReference();
-    ArrayList<String> moves = new ArrayList<String>();
-    String s = "";
-    Side side;
-
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.game_layout);
-
-
-        HashMap<String, Piece> promotionPieces = new HashMap<>();
         promotionPieces.put("KnightBLACK", Piece.BLACK_KNIGHT);
         promotionPieces.put("KnightWHITE", Piece.WHITE_KNIGHT);
         promotionPieces.put("BishopBLACK", Piece.BLACK_BISHOP);
@@ -123,130 +102,223 @@ public class ChessGameActivity extends AppCompatActivity{
         promotionPieces.put("RookWHITE", Piece.WHITE_ROOK);
         promotionPieces.put("QueenBLACK", Piece.BLACK_QUEEN);
         promotionPieces.put("QueenWHITE", Piece.WHITE_QUEEN);
+    }
 
+    private void initPickPromotionPieceDialogue() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Choose promotion figure");
+        final String[] options = {"Knight", "Bishop", "Rook", "Queen"};
+        builder.setCancelable(false);
+        builder.setSingleChoiceItems(options, -1, (dialog, which) -> {
+            Move promotionMove = new Move(squareFrom, coolerSquareTo.getSquare(), promotionPieces.get(options[which] + coolerBoard.getBoard().getSideToMove().flip()));
+            coolerBoard.getBoard().undoMove();
+            coolerBoard.getBoard().doMove(promotionMove);
+            moves.remove(moves.size()-1);
+            moves.add(promotionMove);
+            updateMoveList();
+            drawBoard(coolerBoard.getBoardArray());
+            updateLastMove(moves.get(moves.size()-1));
+            dialog.dismiss();
+        });
+        promotionDialog = builder.create();
+    }
 
-        initHashMap();
-        movesHistory = findViewById(R.id.moves_history);
+    private void initMateDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        if(side == coolerBoard.getBoard().getSideToMove().flip())
+            builder.setTitle("You lost by mate");
+        else
+            builder.setTitle("You won by mate");
+        builder.setCancelable(false);
+        builder.setPositiveButton("Go back", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                Intent intent = new Intent(ChessGameActivity.this, HostJoinActivity.class);
+                startActivity(intent);
+                mateDialog.dismiss();
+                finish();
+            }
+        });
+        mateDialog = builder.create();
 
-        Intent intent = getIntent();
-        String host_id = intent.getStringExtra("host_id");
-        side = Side.valueOf(intent.getStringExtra("side"));
+    }
 
-       myRef.addValueEventListener(new ValueEventListener() {
+    private void sendSms(String phoneNumber, String message) {
+        try {
+            SmsManager smsManager = SmsManager.getDefault();
+            smsManager.sendTextMessage(phoneNumber, null, message, null, null);
+            Toast.makeText(this, "SMS отправлено успешно.", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Toast.makeText(this, "Ошибка отправки SMS: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void setupFirebaseListener() {
+        myRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                String move = dataSnapshot.child("Lobbies").child(host_id).child("lastMove").getValue(String.class);
                 try {
-                    coolerBoard.getBoard().doMove(move);
-                    moves.add(String.valueOf(move));
-                    String s = "";
-                    for (int j = 0; j < moves.size(); j++) {
-                        if (j % 2 == 0) {
-                            s += "\n";
-                            s += j / 2 + 1;
-                            s += ". ";
-                        }
-                        s += moves.get(j);
-                        s += " ";
-                    }
-                    movesHistory.setText(s);
+                    handleFirebaseMoveUpdate(dataSnapshot);
+                    //sendSms("0539638101", "Твой ход");
                 } catch (Exception e) {
-                    Log.e("Artemp", e.toString());
+                    Log.e("Firebase", "Error updating move", e);
                 }
-
-                drawBoard(coolerBoard.getBoardArray());
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.w("ART", "Failed to read value.", error.toException());
+                Log.w("Firebase", "Failed to read value.", error.toException());
             }
         });
+    }
 
+    private void setupBoardGridView() {
         boardGV = findViewById(R.id.chessBoardGridView);
+        movesRecycler = findViewById(R.id.movesRecycler);
+        movesRecycler.setLayoutManager(new LinearLayoutManager(this));
+
         adapter = new ChessBoardAdapter(this);
         boardGV.setAdapter(adapter);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Choose promotion figure");
-        final String[] charSequence = new String[]{"Knight", "Bishop", "Rook", "Queen"};
-        builder.setCancelable(false);
-        builder.setSingleChoiceItems(charSequence, -1, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                Move newMove = new Move(squre_from, coolerSquareTo.getSquare(), promotionPieces.get(charSequence[which] + coolerBoard.getBoard().getSideToMove().flip()));
-                coolerBoard.getBoard().undoMove();
-                coolerBoard.getBoard().doMove(newMove);
-                myRef.child("Lobbies").child(host_id).child("lastMove").setValue(String.valueOf(newMove));
-                dialog.dismiss();
-            }
-        });
+        boardGV.setOnItemClickListener((adapterView, view, position, id) -> handleBoardClick(position));
+    }
 
-        AlertDialog dialog = builder.create();
-        boardGV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                try {
-                    int row = adapter.getItemRow(i);
-                    int col = adapter.getItemCol(i);
-                    coolerSquareTo.parseRowCol(row, col);
-                    adapter.clearBoard();
+    private void handleFirebaseMoveUpdate(DataSnapshot dataSnapshot) {
+        String moveStr = dataSnapshot.child("Lobbies").child(hostId).child("lastMove").getValue(String.class);
+        Move databaseMove = new Move(moveStr, coolerBoard.getBoard().getSideToMove());
 
-                    if (!coolerBoard.getBoard().isMated()
-                           // && coolerBoard.getBoard().getSideToMove().equals(side)
-                    ) {
+        coolerBoard.getBoard().doMove(databaseMove);
+        moves.add(databaseMove);
 
-                        if (coolerBoard.getPossibleMoves(squre_from).contains(coolerSquareTo.getSquare())) {
-                            Move newMove = new Move(squre_from, coolerSquareTo.getSquare());
-                            coolerBoard.getBoard().doMove(newMove);
-                            moves.add(String.valueOf(newMove));
-                            myRef.child("Lobbies").child(host_id).child("lastMove").setValue(String.valueOf(newMove));
-                        } else {
-                            lightPossibleMovesFromSquare(coolerSquareTo);
-                            squre_from = coolerSquareTo.getSquare();
-                        }
-                    } else {
-
-                    }
-                    if (coolerBoard.isPromotionRequired()) {
-                        dialog.show();
-                    }
-                    drawBoard(coolerBoard.getBoardArray());
-                    try {
-                        s = "";
-                        for (int j = 0; j < moves.size(); j++) {
-                            if (j % 2 == 0) {
-                                s += "\n";
-                                s += j / 2 + 1;
-                                s += ". ";
-                            }
-                            s += moves.get(j);
-                            s += " ";
-
-                        }
-                        movesHistory.setText(s);
-                        myRef.child("Lobbies").child(host_id).child("allMoves").setValue(String.valueOf(s));
-                    } catch (Exception e) {
-                        Log.e("Artemp", String.valueOf(e));
-                    }
-
-
-                }
-                catch (Exception e){
-                    Log.e("artq", e.toString());
-                }
-            }
-
-        });
-        coolerBoard = new GameModel();
-        MoveList moveList = new MoveList();
-        Move move = new Move(Square.E2, Square.E4);
-        moveList.add(move);
-        coolerBoard.loadFromMovesList(moveList);
+        updateMoveList();
         drawBoard(coolerBoard.getBoardArray());
+        newGameModel = coolerBoard;
+        myRef.child("Lobbies").child(hostId).child("allMoves").setValue(moves.toString());
+        try {
+            movesRecycler.scrollToPosition(movesAdapter.getItemCount() - 1);
+        }
+        catch (Exception e){}
+    }
+
+    private void handleBoardClick(int position) {
+        if(side == Side.WHITE) {
+            row = adapter.getItemRow(position);
+            col = adapter.getItemCol(position);
+        }
+        else{
+            row = 7 - adapter.getItemRow(position);
+            col = 7 - adapter.getItemCol(position);
+        }
+        coolerSquareTo = new CoolerSquare(Square.A1);
+        coolerSquareTo.parseRowCol(row, col);
+
+        adapter.clearBoard();
+
+
+        if (coolerBoard.getFen().equals(newGameModel.getFen())) {
+            if (!coolerBoard.getBoard().isMated()) {
+                handlePieceMove(row, col);
+            } else {
+                mateDialog.show();
+            }
+
+            if (coolerBoard.isPromotionRequired()) {
+                promotionDialog.show();
+            }
+            else if (moves.size()!=0)
+                updateLastMove(moves.get(moves.size()-1));
+
+
+
+            drawBoard(coolerBoard.getBoardArray());
+            newGameModel = coolerBoard;
+        }
+
+
+        updateMoveList();
+    }
+
+    private void handlePieceMove(int row, int col) {
+        if (coolerBoard.getPossibleMoves(squareFrom).contains(coolerSquareTo.getSquare())) {
+            Move newMove = new Move(squareFrom, coolerSquareTo.getSquare());
+            coolerBoard.getBoard().doMove(newMove);
+            moves.add(newMove);
+
+        } else {
+            lightPossibleMovesFromSquare(coolerSquareTo);
+            squareFrom = coolerSquareTo.getSquare();
+        }
+        try {
+            movesRecycler.scrollToPosition(movesAdapter.getItemCount() - 1);
+        }
+        catch (Exception e){}
 
     }
 
+    private void updateMoveList() {
+        movesList = new ArrayList<>();
+        for (int i = 0; i < moves.size(); i += 2) {
+            if (i == moves.size() - 1) {
+                movesList.add(new MoveItem(String.valueOf((i + 2) / 2), moves.get(i), null, moves.subList(0, i + 1)));
+            } else {
+                movesList.add(new MoveItem(String.valueOf((i + 2) / 2), moves.get(i), moves.get(i + 1), moves.subList(0, i + 2)));
+            }
+        }
+        movesAdapter = new MovesAdapter(getApplicationContext(), movesList);
+        movesRecycler.setAdapter(movesAdapter);
+
+        movesAdapter.setOnClickListener((position, moveList) -> {
+            newGameModel = new GameModel();
+            if(moveList.size()%2==0 && position == 1)
+                newGameModel.loadFromMovesList(moveList.subList(0, moveList.size()-1));
+            else
+                newGameModel.loadFromMovesList(moveList);
+            drawBoard(newGameModel.getBoardArray());
+        });
+    }
+
+    private void updateLastMove(Move move) {
+        myRef.child("Lobbies").child(hostId).child("lastMove").setValue(move.toString());
+        myRef.child("Lobbies").child(hostId).child("allMoves").setValue(moves.toString());
+    }
+
+    private void drawBoard(String[][] boardArray) {
+        if(side == Side.WHITE){
+            for (int i = 0; i < 8; i++) {
+                for (int j = 0; j < 8; j++) {
+                    updateChessBoardCell(i, j, map.get(boardArray[i][j]));
+                }
+            }
+        }
+        else if(side == Side.BLACK){
+            for (int i = 0; i < 8; i++) {
+                for (int j = 0; j < 8; j++) {
+                    updateChessBoardCell(i, j, map.get(boardArray[7-i][7-j]));
+                }
+            }
+        }
+    }
+
+    private void updateChessBoardCell(int row, int col, int drawableResId) {
+        if (adapter != null) {
+            adapter.updateCellImage(row, col, drawableResId);
+        }
+    }
+
+    private void lightPossibleMovesFromSquare(CoolerSquare square) {
+        if(side == Side.WHITE) {
+            for (Square targetSquare : coolerBoard.getPossibleMoves(square.getSquare())) {
+                CoolerSquare coolerTargetSquare = new CoolerSquare(targetSquare);
+                adapter.lightUpCell(coolerTargetSquare.getSquareRow(), coolerTargetSquare.getSquareCol());
+            }
+            adapter.lightCell(square.getSquareRow(), square.getSquareCol());
+        }
+        else{
+            for (Square targetSquare : coolerBoard.getPossibleMoves(square.getSquare())) {
+                CoolerSquare coolerTargetSquare = new CoolerSquare(targetSquare);
+                adapter.lightUpCell(7-coolerTargetSquare.getSquareRow(), 7-coolerTargetSquare.getSquareCol());
+            }
+            adapter.lightCell(7-square.getSquareRow(), 7-square.getSquareCol());
+        }
+    }
 }
-
-

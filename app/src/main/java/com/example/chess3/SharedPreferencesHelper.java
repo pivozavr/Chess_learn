@@ -15,12 +15,19 @@ public class SharedPreferencesHelper {
         this.editor = sharedPreferences.edit();
     }
 
-    public void putData(String key, String value) {
+    public void putDataString(String key, String value) {
         editor.putString(key, value).apply();
     }
 
-    public String getData(String key) {
-        return sharedPreferences.getString(key, "");
+    public String getDataString(String key) {
+        return sharedPreferences.getString(key, " ");
+    }
+    public void putDataBool(String key, boolean value) {
+        editor.putBoolean(key, value).apply();
+    }
+
+    public boolean getDataBool(String key) {
+        return sharedPreferences.getBoolean(key, false);
     }
 
 

@@ -142,16 +142,15 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                     Toast.makeText(RegisterActivity.this, "Accout created.", Toast.LENGTH_SHORT).show();
                     writeNewUser(email, password, username.getText().toString(), seekBar.getProgress());
                     if (checkBox.isChecked()) {
-                        sprefHelper.putData("out", "true");
-                        sprefHelper.putData("email", email);
-                        sprefHelper.putData("password", password);
+                        sprefHelper.putDataString("email", email);
+                        sprefHelper.putDataString("password", password);
 
                     }
-                    Intent intent = new Intent(RegisterActivity.this, SignUpActivity.class);
+                    Intent intent = new Intent(RegisterActivity.this, LogInActivity.class);
                     startActivity(intent);
                     finish();
                 } else {
-                    Toast.makeText(RegisterActivity.this, "Acoount creation failed.",
+                    Toast.makeText(RegisterActivity.this, "Account creation failed.",
                             Toast.LENGTH_SHORT).show();
 
                 }
